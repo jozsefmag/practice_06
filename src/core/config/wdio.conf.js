@@ -1,3 +1,6 @@
+import { ReportAggregator } from 'wdio-html-nice-reporter';
+
+let reportAggregator
 export const config = {
     //
     // ====================
@@ -21,12 +24,13 @@ export const config = {
     // of the config file unless it's absolute.
     //
     specs: [
-        './src/tests/**/*.js'
+        './../../tests/**.js'
     ],
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
     ],
+    
     //
     // ============
     // Capabilities
@@ -131,7 +135,52 @@ export const config = {
         ui: 'bdd',
         timeout: 60000
     },
+    reporters: [
+        [
+            'spec',
+            {
+                symbols: {
+                    passed: '✓',
+                    failed: '✗',
+                },
+                addConsoleLogs: false,
+                onlyFailures: false,
+                showPreface: true,
+                color: true,
+            },
+        ],
+        [
+            'html-nice',
+            {
+                outputDir: './reports/html-reports/',
+                filename: 'report.html',
+                reportTitle: 'Test Report Title',
+                linkScreenshots: true,
+                showInBrowser: true,
+                collapseTests: false,
+                useOnAfterCommandForScreenshot: true,
+            },
+        ],
+    ],
+    onPrepare: function (config, capabilities) {
+        reportAggregator = new ReportAggregator({
+            outputDir: './reports/html-reports/',
+            filename: `chrome-master-report.html`,
+            reportTitle: 'Micro-Magic Web Test Report',
+            browserName: 'chrome',
+            showInBrowser: true
+        });
+        reportAggregator.clean();
+    },
 
+    onComplete: function (exitCode, config, capabilities, results) {
+        (async () => {
+            await reportAggregator.createReport();
+        })();
+    },
+
+
+    
     //
     // =====
     // Hooks
@@ -229,7 +278,7 @@ export const config = {
     // afterTest: function(test, context, { error, result, duration, passed, retries }) {
     // },
 
-
+    
     /**
      * Hook that gets executed after the suite has ended
      * @param {object} suite suite details
